@@ -4,12 +4,13 @@ const cors = require("cors");
 const express = require('express');
 const app = express();
 const port = process.env.PORT;
-app.use(
-  cors({
-    origin: process.env.ORIGINS,
-    credentials: true,
-  })
-);
+
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
 app.use(express.json());
 const connectDB = require("./config/db");
 connectDB();
