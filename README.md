@@ -71,18 +71,19 @@ The project demonstrates fullstack development skills, including frontend–back
 ## Backend API Endpoints
 
 ### Authentication
-POST /api/auth/register Register a new user
-POST /api/auth/login Login user
-GET /api/auth/profile Get authenticated user profile (protected)
+- POST /api/auth/register Register a new user
+- POST /api/auth/login Login user
+- GET /api/auth/profile Get authenticated user profile (protected)
 
 
 ### Tasks
-GET /api/tasks Get all tasks for authenticated user
-POST /api/tasks Create a new task
-GET /api/tasks/:id Get a specific task
-PUT /api/tasks/:id Update a task
-DELETE /api/tasks/:id Delete a task
+- GET /api/tasks Get all tasks for authenticated user
+- POST /api/tasks Create a new task
+- GET /api/tasks/:id Get a specific task
+- PUT /api/tasks/:id Update a task
+- DELETE /api/tasks/:id Delete a task
 
+- Please Note That These Routes Are Protected Routes And Wont Work Wihtout properly Authorised JWT Token From Server
 
 ---
 
@@ -119,7 +120,7 @@ DELETE /api/tasks/:id Delete a task
 ### Create a .env file
 
 - PORT=5000
-- MONGO_URI=your_mongodb_connection_string
+- MONGO_URI=your_mongodb_connection_string (Create your own mongodb cluster for this)
 - JWT_SECRET=your_jwt_secret
 
 
