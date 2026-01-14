@@ -101,7 +101,7 @@ DELETE /api/tasks/:id Delete a task
   "updatedAt": "ISO date",
   "userId": "user_id"
 }
-
+```
 Setup Instructions
 Backend Setup
 
