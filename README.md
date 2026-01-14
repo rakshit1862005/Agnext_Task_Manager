@@ -102,28 +102,28 @@ DELETE /api/tasks/:id Delete a task
   "userId": "user_id"
 }
 ```
-### Setup Instructions
-## Backend Setup
+# Setup Instructions
+### Backend Setup
 
-## Clone the repository
+### Clone the repository
 
 - git clone <repo-link>
 - cd backend
 
 
-# Install dependencies
+### Install dependencies
 
 - npm install
 
 
-## Create a .env file
+### Create a .env file
 
 - PORT=5000
 - MONGO_URI=your_mongodb_connection_string
 - JWT_SECRET=your_jwt_secret
 
 
-## Start the server
+### Start the server
 
 - node index.js
 
@@ -134,36 +134,36 @@ DELETE /api/tasks/:id Delete a task
 - cd frontend
 
 
-## Install dependencies
+### Install dependencies
 
 - npm install
 
 
-## Configure API base URL in frontend
+### Configure API base URL in frontend
 
 - const API_BASE_URL = "http://localhost:5000/api";
 
 
-## Start development server
+### Start development server
 
 - npm run dev
 
-### Challenges and Solutions
-## Challenge 1: Data Persistence Issues
+## Challenges and Solutions
+### Challenge 1: Data Persistence Issues
 
 Initially, task data was stored in-memory on the backend, which caused data loss on server restarts and inconsistencies across deployments.
 
-## Solution:
+### Solution:
 Migrated task storage to MongoDB using Mongoose and implemented persistent CRUD operations with proper schema validation.
 
-## Challenge 2: Authentication and User Isolation
+### Challenge 2: Authentication and User Isolation
 
 Ensuring that each user could only access their own tasks required secure authentication and proper request handling.
 
-## Solution:
+### Solution:
 Implemented JWT-based authentication and protected backend routes using middleware. Tasks are queried using the authenticated user’s ID, ensuring strict user-level data isolation.
 
-### Future Enhancements
+## Future Enhancements
 
 - Advanced search functionality
 
