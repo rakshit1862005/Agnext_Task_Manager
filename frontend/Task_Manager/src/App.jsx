@@ -21,7 +21,10 @@ const normalizeTask = (task) => ({
   priority: task.priority,
   dueDate: task.dueDate,
   category: task.category,
+  createdAt: task.createdAt,   // ✅ REQUIRED
+  updatedAt: task.updatedAt,   // ✅ SAFE
 });
+
 
 const TaskManagementApp = () => {
   const [user, setUser] = useState(null);
@@ -33,7 +36,7 @@ const TaskManagementApp = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      setUser({ name: "User" }); // minimal restore
+      setUser({ name: "user" }); // minimal restore
     }
   }, []);
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart3, CheckCircle2, Clock, AlertCircle, Target, TrendingUp, PieChart, Calendar, Award } from 'lucide-react';
+import { BarChart3, CheckCircle2, Clock, AlertCircle, Target, CalendarDays, PieChart, Calendar, Award } from 'lucide-react';
 
 const DashboardPage = ({ tasks }) => {
   const stats = {
@@ -22,28 +22,85 @@ const DashboardPage = ({ tasks }) => {
     low: tasks.filter(t => t.priority === 'Low').length
   };
 
-  const categoryBreakdown = tasks.reduce((acc, task) => {
+  // --- Category Logic for Pie Chart ---
+  const CATEGORY_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1'];
+  
+  const categoryData = Object.entries(tasks.reduce((acc, task) => {
     if (task.category) {
       acc[task.category] = (acc[task.category] || 0) + 1;
     }
     return acc;
-  }, {});
+  }, {})).map(([name, count], index) => ({
+    name,
+    count,
+    color: CATEGORY_COLORS[index % CATEGORY_COLORS.length]
+  }));
 
-  const last7Days = [...Array(7)].map((_, i) => {
+  const totalCategorized = categoryData.reduce((sum, item) => sum + item.count, 0);
+  
+  // Generate Conic Gradient for Pie Chart
+  let currentAngle = 0;
+  const pieGradient = categoryData.length > 0 
+    ? `conic-gradient(${categoryData.map(item => {
+        const percentage = (item.count / totalCategorized) * 100;
+        const start = currentAngle;
+        currentAngle += percentage;
+        return `${item.color} ${start}% ${currentAngle}%`;
+      }).join(', ')})`
+    : 'conic-gradient(#e2e8f0 0% 100%)';
+
+
+  // --- Heatmap Logic ---
+  // Generate last 150 days (approx 5 months)
+  const heatmapDays = [...Array(150)].map((_, i) => {
     const date = new Date();
-    date.setDate(date.getDate() - (6 - i));
+    date.setDate(date.getDate() - (149 - i));
     return date.toISOString().split('T')[0];
   });
 
-  const activityData = last7Days.map(date => ({
-    date,
-    completed: tasks.filter(t => 
-      t.status === 'Completed' && 
-      t.updatedAt && 
-      t.updatedAt.split('T')[0] === date
-    ).length
-  }));
+  // Group completed tasks by date for intensity
+  const completedByDate = tasks
+    .filter(t => t.status === 'Completed' && t.updatedAt)
+    .reduce((acc, t) => {
+      const date = t.updatedAt.split('T')[0];
+      acc[date] = (acc[date] || 0) + 1;
+      return acc;
+    }, {});
 
+  const maxDailyTasks = Math.max(...Object.values(completedByDate), 1);
+
+  const getIntensityClass = (count) => {
+    if (!count) return 'level-0';
+    const ratio = count / maxDailyTasks;
+    if (ratio <= 0.25) return 'level-1';
+    if (ratio <= 0.50) return 'level-2';
+    if (ratio <= 0.75) return 'level-3';
+    return 'level-4';
+  };
+
+  // Group days into weeks for the grid layout
+  const heatmapWeeks = [];
+  let currentWeek = [];
+  
+  heatmapDays.forEach((dateString) => {
+    const dateObj = new Date(dateString);
+    const dayOfWeek = dateObj.getDay(); // 0 = Sunday
+    
+    // Start a new column if it's Sunday or first iteration
+    if (dayOfWeek === 0 && currentWeek.length > 0) {
+      heatmapWeeks.push(currentWeek);
+      currentWeek = [];
+    }
+    
+    currentWeek.push({
+      date: dateString,
+      count: completedByDate[dateString] || 0
+    });
+  });
+  if (currentWeek.length > 0) heatmapWeeks.push(currentWeek);
+
+
+  // --- Upcoming Tasks Logic ---
   const today = new Date();
   const next7Days = new Date();
   next7Days.setDate(today.getDate() + 7);
@@ -109,6 +166,7 @@ const DashboardPage = ({ tasks }) => {
             <h2 className="chart-title">Priority Breakdown</h2>
           </div>
           <div>
+            {/* Priority Bars (Unchanged) */}
             <div className="progress-item">
               <div className="progress-header">
                 <span className="progress-label">High Priority</span>
@@ -150,28 +208,30 @@ const DashboardPage = ({ tasks }) => {
 
         <div className="chart-card">
           <div className="chart-header">
-            <TrendingUp size={20} color="#334155" />
-            <h2 className="chart-title">7-Day Completion Trend</h2>
+            <CalendarDays size={20} color="#334155" />
+            <h2 className="chart-title">Activity Heatmap</h2>
           </div>
-          <div className="trend-chart">
-            {activityData.map((day, idx) => {
-              const maxCompleted = Math.max(...activityData.map(d => d.completed), 1);
-              const height = (day.completed / maxCompleted) * 100;
-              return (
-                <div key={idx} className="trend-bar">
-                  <div className="trend-bar-container">
+          <div className="heatmap-container">
+            <div className="heatmap-grid">
+              {heatmapWeeks.map((week, wIdx) => (
+                <div key={wIdx} className="heatmap-week">
+                  {week.map((day, dIdx) => (
                     <div 
-                      className="trend-bar-fill"
-                      style={{ height: `${height}%` }}
-                      title={`${day.completed} completed`}
+                      key={dIdx}
+                      className={`heatmap-day ${getIntensityClass(day.count)}`}
+                      title={`${day.date}: ${day.count} tasks completed`}
                     />
-                  </div>
-                  <span className="trend-label">
-                    {new Date(day.date).toLocaleDateString('en', { weekday: 'short' })}
-                  </span>
+                  ))}
                 </div>
-              );
-            })}
+              ))}
+            </div>
+            <div className="heatmap-legend">
+              <span>Less</span>
+              <div className="heatmap-day level-0"></div>
+              <div className="heatmap-day level-2"></div>
+              <div className="heatmap-day level-4"></div>
+              <span>More</span>
+            </div>
           </div>
         </div>
       </div>
@@ -182,20 +242,38 @@ const DashboardPage = ({ tasks }) => {
             <PieChart size={20} color="#334155" />
             <h2 className="chart-title">Tasks by Category</h2>
           </div>
-          <div className="category-list">
-            {Object.keys(categoryBreakdown).length > 0 ? (
-              Object.entries(categoryBreakdown).map(([category, count], idx) => (
-                <div key={idx} className="category-item">
-                  <div className="category-left">
-                    <div className="category-dot" />
-                    <span className="category-name">{category}</span>
+          
+          <div className="pie-chart-container">
+            {/* The Pie Chart Visual */}
+            <div 
+              className="pie-chart"
+              style={{ background: pieGradient }}
+            >
+              <div className="pie-hole">
+                <span className="pie-total">{totalCategorized}</span>
+                <span className="pie-label">Tasks</span>
+              </div>
+            </div>
+
+            {/* The Legend List */}
+            <div className="category-list">
+              {categoryData.length > 0 ? (
+                categoryData.map((cat, idx) => (
+                  <div key={idx} className="category-item">
+                    <div className="category-left">
+                      <div 
+                        className="category-dot" 
+                        style={{ background: cat.color }}
+                      />
+                      <span className="category-name">{cat.name}</span>
+                    </div>
+                    <span className="category-count">{cat.count}</span>
                   </div>
-                  <span className="category-count">{count}</span>
-                </div>
-              ))
-            ) : (
-              <p className="empty-text">No categories yet</p>
-            )}
+                ))
+              ) : (
+                <p className="empty-text">No categories yet</p>
+              )}
+            </div>
           </div>
         </div>
 
