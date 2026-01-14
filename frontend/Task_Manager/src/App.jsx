@@ -21,8 +21,8 @@ const normalizeTask = (task) => ({
   priority: task.priority,
   dueDate: task.dueDate,
   category: task.category,
-  createdAt: task.createdAt,   // ✅ REQUIRED
-  updatedAt: task.updatedAt,   // ✅ SAFE
+  createdAt: task.createdAt,   
+  updatedAt: task.updatedAt,  
 });
 
 
@@ -129,7 +129,7 @@ const TaskManagementApp = () => {
             <div className="header-logo">
               <CheckCircle2 size={24} color="white" />
             </div>
-            <h1 className="header-title">TaskFlow Pro</h1>
+            <h1 className="header-title">Priorit</h1>
           </div>
 
           <nav
@@ -202,7 +202,7 @@ const TaskManagementApp = () => {
       </header>
 
       <main className="main-content">
-        {currentPage === "dashboard" && <DashboardPage tasks={tasks} />}
+        {currentPage === "dashboard" && <DashboardPage tasks={tasks} onAddTask={handleAddTask}/>}
         {currentPage === "tasks" && (
           <TasksPage
             tasks={tasks}

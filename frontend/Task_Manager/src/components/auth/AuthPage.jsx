@@ -43,7 +43,7 @@ const AuthPage = ({ onLogin }) => {
           <div className="auth-logo">
             <CheckCircle2 size={32} color="white" />
           </div>
-          <h1 className="auth-title">TaskFlow Pro</h1>
+          <h1 className="auth-title">Priorit</h1>
           <p className="auth-subtitle">Professional Task Management</p>
         </div>
 

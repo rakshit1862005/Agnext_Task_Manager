@@ -336,3 +336,55 @@
   .stats-grid, .charts-grid { grid-template-columns: 1fr; }
   .pie-chart-container { flex-direction: column; align-items: flex-start; }
 }
+
+/* --- DASHBOARD CONTROLS --- */
+.dashboard-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.quick-add-form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.quick-add-form input,
+.quick-add-form select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+.quick-add-form button {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.quick-add-form button:hover {
+  background: #1d4ed8;
+}
+
+.dashboard-filters {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dashboard-filters select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}

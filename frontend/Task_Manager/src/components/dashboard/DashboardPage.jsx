@@ -1,115 +1,160 @@
-import React from 'react';
-import { BarChart3, CheckCircle2, Clock, AlertCircle, Target, CalendarDays, PieChart, Calendar, Award } from 'lucide-react';
+import React, { useState } from "react";
+import {
+  BarChart3,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  Target,
+  CalendarDays,
+  PieChart,
+  Calendar,
+  Award,
+  Plus
+} from "lucide-react";
 
-const DashboardPage = ({ tasks }) => {
+const DashboardPage = ({ tasks, onAddTask }) => {
+  /* ================= FILTERS ================= */
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [priorityFilter, setPriorityFilter] = useState("All");
+  const [categoryFilter, setCategoryFilter] = useState("All");
+
+  const categories = Array.from(
+    new Set(tasks.map(t => t.category).filter(Boolean))
+  );
+
+  const filteredTasks = tasks.filter(t => {
+    if (statusFilter !== "All" && t.status !== statusFilter) return false;
+    if (priorityFilter !== "All" && t.priority !== priorityFilter) return false;
+    if (categoryFilter !== "All" && t.category !== categoryFilter) return false;
+    return true;
+  });
+
+  /* ================= QUICK ADD ================= */
+  const [quickTask, setQuickTask] = useState({
+    title: "",
+    priority: "Low",
+    category: "",
+    dueDate: ""
+  });
+
+  const handleQuickAdd = (e) => {
+    e.preventDefault();
+    if (!quickTask.title.trim()) return;
+
+    onAddTask(quickTask);
+    setQuickTask({ title: "", priority: "Low", category: "", dueDate: "" });
+  };
+
+  /* ================= STATS ================= */
   const stats = {
-    total: tasks.length,
-    completed: tasks.filter(t => t.status === 'Completed').length,
-    inProgress: tasks.filter(t => t.status === 'In Progress').length,
-    pending: tasks.filter(t => t.status === 'Pending').length,
-    highPriority: tasks.filter(t => t.priority === 'High').length,
-    overdue: tasks.filter(t => {
-      if (!t.dueDate || t.status === 'Completed') return false;
+    total: filteredTasks.length,
+    completed: filteredTasks.filter(t => t.status === "Completed").length,
+    inProgress: filteredTasks.filter(t => t.status === "In Progress").length,
+    pending: filteredTasks.filter(t => t.status === "Pending").length,
+    highPriority: filteredTasks.filter(t => t.priority === "High").length,
+    overdue: filteredTasks.filter(t => {
+      if (!t.dueDate || t.status === "Completed") return false;
       return new Date(t.dueDate) < new Date();
     }).length
   };
 
-  const completionRate = stats.total > 0 ? ((stats.completed / stats.total) * 100).toFixed(1) : 0;
+  const completionRate =
+    stats.total > 0 ? ((stats.completed / stats.total) * 100).toFixed(1) : 0;
 
+  /* ================= PRIORITY ================= */
   const priorityBreakdown = {
-    high: tasks.filter(t => t.priority === 'High').length,
-    medium: tasks.filter(t => t.priority === 'Medium').length,
-    low: tasks.filter(t => t.priority === 'Low').length
+    high: filteredTasks.filter(t => t.priority === "High").length,
+    medium: filteredTasks.filter(t => t.priority === "Medium").length,
+    low: filteredTasks.filter(t => t.priority === "Low").length
   };
 
-  // --- Category Logic for Pie Chart ---
-  const CATEGORY_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1'];
-  
-  const categoryData = Object.entries(tasks.reduce((acc, task) => {
-    if (task.category) {
-      acc[task.category] = (acc[task.category] || 0) + 1;
-    }
-    return acc;
-  }, {})).map(([name, count], index) => ({
+  /* ================= CATEGORY PIE ================= */
+  const CATEGORY_COLORS = [
+    "#3b82f6",
+    "#10b981",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6",
+    "#ec4899",
+    "#6366f1"
+  ];
+
+  const categoryData = Object.entries(
+    filteredTasks.reduce((acc, task) => {
+      if (task.category) {
+        acc[task.category] = (acc[task.category] || 0) + 1;
+      }
+      return acc;
+    }, {})
+  ).map(([name, count], index) => ({
     name,
     count,
     color: CATEGORY_COLORS[index % CATEGORY_COLORS.length]
   }));
 
-  const totalCategorized = categoryData.reduce((sum, item) => sum + item.count, 0);
-  
-  // Generate Conic Gradient for Pie Chart
+  const totalCategorized = categoryData.reduce((s, c) => s + c.count, 0);
+
   let currentAngle = 0;
-  const pieGradient = categoryData.length > 0 
-    ? `conic-gradient(${categoryData.map(item => {
-        const percentage = (item.count / totalCategorized) * 100;
-        const start = currentAngle;
-        currentAngle += percentage;
-        return `${item.color} ${start}% ${currentAngle}%`;
-      }).join(', ')})`
-    : 'conic-gradient(#e2e8f0 0% 100%)';
+  const pieGradient =
+    categoryData.length > 0
+      ? `conic-gradient(${categoryData
+          .map(item => {
+            const percent = (item.count / totalCategorized) * 100;
+            const start = currentAngle;
+            currentAngle += percent;
+            return `${item.color} ${start}% ${currentAngle}%`;
+          })
+          .join(", ")})`
+      : "conic-gradient(#e2e8f0 0% 100%)";
 
-
-  // --- Heatmap Logic ---
-  // Generate last 150 days (approx 5 months)
+  /* ================= HEATMAP ================= */
   const heatmapDays = [...Array(150)].map((_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() - (149 - i));
-    return date.toISOString().split('T')[0];
+    const d = new Date();
+    d.setDate(d.getDate() - (149 - i));
+    return d.toISOString().split("T")[0];
   });
 
-  // Group completed tasks by date for intensity
-  const completedByDate = tasks
-    .filter(t => t.status === 'Completed' && t.updatedAt)
+  const completedByDate = filteredTasks
+    .filter(t => t.status === "Completed" && t.updatedAt)
     .reduce((acc, t) => {
-      const date = t.updatedAt.split('T')[0];
-      acc[date] = (acc[date] || 0) + 1;
+      const d = t.updatedAt.split("T")[0];
+      acc[d] = (acc[d] || 0) + 1;
       return acc;
     }, {});
 
   const maxDailyTasks = Math.max(...Object.values(completedByDate), 1);
 
   const getIntensityClass = (count) => {
-    if (!count) return 'level-0';
-    const ratio = count / maxDailyTasks;
-    if (ratio <= 0.25) return 'level-1';
-    if (ratio <= 0.50) return 'level-2';
-    if (ratio <= 0.75) return 'level-3';
-    return 'level-4';
+    if (!count) return "level-0";
+    const r = count / maxDailyTasks;
+    if (r <= 0.25) return "level-1";
+    if (r <= 0.5) return "level-2";
+    if (r <= 0.75) return "level-3";
+    return "level-4";
   };
 
-  // Group days into weeks for the grid layout
   const heatmapWeeks = [];
-  let currentWeek = [];
-  
-  heatmapDays.forEach((dateString) => {
-    const dateObj = new Date(dateString);
-    const dayOfWeek = dateObj.getDay(); // 0 = Sunday
-    
-    // Start a new column if it's Sunday or first iteration
-    if (dayOfWeek === 0 && currentWeek.length > 0) {
-      heatmapWeeks.push(currentWeek);
-      currentWeek = [];
+  let week = [];
+  heatmapDays.forEach(date => {
+    const d = new Date(date);
+    if (d.getDay() === 0 && week.length) {
+      heatmapWeeks.push(week);
+      week = [];
     }
-    
-    currentWeek.push({
-      date: dateString,
-      count: completedByDate[dateString] || 0
-    });
+    week.push({ date, count: completedByDate[date] || 0 });
   });
-  if (currentWeek.length > 0) heatmapWeeks.push(currentWeek);
+  if (week.length) heatmapWeeks.push(week);
 
-
-  // --- Upcoming Tasks Logic ---
+  /* ================= UPCOMING ================= */
   const today = new Date();
   const next7Days = new Date();
   next7Days.setDate(today.getDate() + 7);
-  
-  const upcomingTasks = tasks
+
+  const upcomingTasks = filteredTasks
+    .filter(t => t.dueDate && t.status !== "Completed")
     .filter(t => {
-      if (!t.dueDate || t.status === 'Completed') return false;
-      const dueDate = new Date(t.dueDate);
-      return dueDate >= today && dueDate <= next7Days;
+      const d = new Date(t.dueDate);
+      return d >= today && d <= next7Days;
     })
     .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
     .slice(0, 5);
@@ -121,6 +166,69 @@ const DashboardPage = ({ tasks }) => {
         <p className="page-subtitle">Track your productivity and task completion</p>
       </div>
 
+      <div className="dashboard-controls">
+        <form className="quick-add-form" onSubmit={handleQuickAdd}>
+          <input
+            type="text"
+            placeholder="Quick add task..."
+            value={quickTask.title}
+            onChange={e =>
+              setQuickTask({ ...quickTask, title: e.target.value })
+            }
+          />
+          <select
+            value={quickTask.priority}
+            onChange={e =>
+              setQuickTask({ ...quickTask, priority: e.target.value })
+            }
+          >
+            <option>Low</option>
+            <option>Medium</option>
+            <option>High</option>
+          </select>
+          <input
+            type="text"
+            placeholder="Category"
+            value = {quickTask.category}
+            onChange={e=> setQuickTask({...quickTask,category:e.target.value})}
+            ></input>
+          <input
+            type="date"
+            value={quickTask.dueDate}
+            onChange={e =>
+              setQuickTask({ ...quickTask, dueDate: e.target.value })
+            }
+          />
+          <button type="submit">
+            <Plus size={16} /> Add
+          </button>
+        </form>
+
+        <div className="dashboard-filters">
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+            <option>All</option>
+            <option>Pending</option>
+            <option>In Progress</option>
+            <option>Completed</option>
+          </select>
+
+          <select value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)}>
+            <option>All</option>
+            <option>High</option>
+            <option>Medium</option>
+            <option>Low</option>
+          </select>
+
+          <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
+            <option>All</option>
+            {categories.map(c => (
+              <option key={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+    <div>
       <div className="stats-grid">
         <div className="stat-card">
           <div className="stat-header">
@@ -334,6 +442,7 @@ const DashboardPage = ({ tasks }) => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };
