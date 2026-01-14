@@ -13,9 +13,19 @@ module.exports = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
+
+    // Normalize user identity (support for old production + new tokens)
+    req.user = {
+      id: decoded.id || decoded.userId,
+    };
+
+    if (!req.user.id) {
+      return res.status(401).json({ message: "Invalid token payload" });
+    }
+
     next();
   } catch (err) {
+    console.error("JWT ERROR:", err.message);
     return res.status(401).json({ message: "Invalid token" });
   }
 };
