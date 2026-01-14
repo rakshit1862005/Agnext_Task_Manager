@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
-import { CheckCircle2 } from 'lucide-react';
-
-const API_BASE = import.meta.env.VITE_API_BASE;
+import React, { useState } from "react";
+import { CheckCircle2 } from "lucide-react";
+import { apiFetch } from "../../services/api";
 
 const AuthPage = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
 
-  // NEW: form state
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,27 +22,15 @@ const AuthPage = ({ onLogin }) => {
         ? { email, password }
         : { name, email, password };
 
-      const res = await fetch(`${API_BASE}${endpoint}`, {
+      const data = await apiFetch(endpoint, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(body),
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Authentication failed");
-      }
-
-      // EXPECTED backend response:
-      // { user: { id, name, email }, token }
       localStorage.setItem("token", data.token);
-
-      onLogin(data.user); 
+      onLogin(data.user);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Authentication failed");
     } finally {
       setLoading(false);
     }
@@ -65,68 +51,70 @@ const AuthPage = ({ onLogin }) => {
           <div className="auth-tabs">
             <button
               onClick={() => setIsLogin(true)}
-              className={`auth-tab ${isLogin ? 'active' : ''}`}
+              className={`auth-tab ${isLogin ? "active" : ""}`}
             >
               Login
             </button>
             <button
               onClick={() => setIsLogin(false)}
-              className={`auth-tab ${!isLogin ? 'active' : ''}`}
+              className={`auth-tab ${!isLogin ? "active" : ""}`}
             >
               Register
             </button>
           </div>
 
-          <div>
-            {!isLogin && (
-              <div className="form-group">
-                <label className="form-label">Full Name</label>
-                <input
-                  type="text"
-                  placeholder="John Doe"
-                  className="form-input"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-            )}
-
+          {!isLogin && (
             <div className="form-group">
-              <label className="form-label">Email</label>
+              <label className="form-label">Full Name</label>
               <input
-                type="email"
-                placeholder="you@example.com"
+                type="text"
                 className="form-input"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
               />
             </div>
+          )}
 
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                className="form-input"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-
-            {error && <p style={{ color: "red", marginBottom: "0.5rem" }}>{error}</p>}
-
-            <button
-              onClick={handleSubmit}
-              className="btn-primary"
-              disabled={loading}
-            >
-              {loading
-                ? "Please wait..."
-                : isLogin
-                ? "Sign In"
-                : "Create Account"}
-            </button>
+          <div className="form-group">
+            <label className="form-label">Email</label>
+            <input
+              type="email"
+              className="form-input"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
+
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <input
+              type="password"
+              className="form-input"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+
+          {error && (
+            <p style={{ color: "red", marginBottom: "0.5rem" }}>
+              {error}
+            </p>
+          )}
+
+          <button
+            onClick={handleSubmit}
+            className="btn-primary"
+            disabled={loading}
+          >
+            {loading
+              ? "Please wait..."
+              : isLogin
+              ? "Sign In"
+              : "Create Account"}
+          </button>
         </div>
       </div>
     </div>
