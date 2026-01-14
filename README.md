@@ -10,8 +10,8 @@ The project demonstrates fullstack development skills, including frontend–back
 
 ## Live Demo
 
-- **Frontend:** <YOUR_FRONTEND_DEPLOYMENT_LINK>
-- **Backend API:** <YOUR_BACKEND_DEPLOYMENT_LINK>
+- **Frontend:** https://agnext-task-manager-er8u.vercel.app/
+- **Backend API:** https://agnext-task-manager.onrender.com/api
 
 > Note: The backend is deployed on a free hosting tier and may take a few seconds to respond on the first request due to cold start.
 
@@ -176,7 +176,7 @@ Implemented JWT-based authentication and protected backend routes using middlewa
 
 - Video Demo
 
-///LINK HERE///
+https://drive.google.com/file/d/1uEBXTZTG0Qwk1Y5oqZzaQRso30IJajW2/view?usp=sharing
 
 - User authentication
 
@@ -188,9 +188,7 @@ Implemented JWT-based authentication and protected backend routes using middlewa
 
 - API Documentation
 
-- Swagger documentation is provided for testing and exploring API endpoints.
-
-///(Swagger link to be added)///
+- Swagger Collection Json File is provided for testing and exploring API endpoints.
 
 - Submission Notes
 
