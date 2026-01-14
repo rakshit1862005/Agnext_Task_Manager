@@ -5,11 +5,17 @@ const {
   getTasks,
   createTask,
   updateTask,
-  deleteTask
+  deleteTask,
+  getTaskStats
 } = require("../controllers/taskController");
 
+/* -------------------- Protected routes -------------------- */
 router.use(auth);
 
+/* -------------------- BONUS: Task statistics -------------------- */
+router.get("/stats", getTaskStats);
+
+/* -------------------- Task CRUD -------------------- */
 router.get("/", getTasks);
 router.post("/", createTask);
 router.put("/:id", updateTask);

@@ -77,3 +77,27 @@ exports.deleteTask = async (req, res) => {
     res.status(500).json({ message: "Failed to delete task" });
   }
 };
+
+/* -------------------- Get task statistics (BONUS) -------------------- */
+exports.getTaskStats = async (req, res) => {
+  try {
+    const tasks = await Task.find({ userId: req.user.id });
+
+    const stats = {
+      total: tasks.length,
+      completed: tasks.filter(t => t.status === "Completed").length,
+      inProgress: tasks.filter(t => t.status === "In Progress").length,
+      pending: tasks.filter(t => t.status === "Pending").length,
+      highPriority: tasks.filter(t => t.priority === "High").length,
+      overdue: tasks.filter(t => {
+        if (!t.dueDate || t.status === "Completed") return false;
+        return new Date(t.dueDate) < new Date();
+      }).length
+    };
+
+    res.json(stats);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch task statistics" });
+  }
+};
