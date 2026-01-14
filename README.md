@@ -102,99 +102,99 @@ DELETE /api/tasks/:id Delete a task
   "userId": "user_id"
 }
 ```
-###Setup Instructions
-##Backend Setup
+### Setup Instructions
+## Backend Setup
 
-##Clone the repository
+## Clone the repository
 
--git clone <repo-link>
--cd backend
-
-
-#Install dependencies
-
--npm install
+- git clone <repo-link>
+- cd backend
 
 
-##Create a .env file
+# Install dependencies
 
--PORT=5000
--MONGO_URI=your_mongodb_connection_string
--JWT_SECRET=your_jwt_secret
+- npm install
 
 
-##Start the server
+## Create a .env file
 
--node index.js
-
--Frontend Setup
-
--Navigate to frontend directory
-
--cd frontend
+- PORT=5000
+- MONGO_URI=your_mongodb_connection_string
+- JWT_SECRET=your_jwt_secret
 
 
-##Install dependencies
+## Start the server
 
--npm install
+- node index.js
+
+- Frontend Setup
+
+- Navigate to frontend directory
+
+- cd frontend
 
 
-##Configure API base URL in frontend
+## Install dependencies
 
--const API_BASE_URL = "http://localhost:5000/api";
+- npm install
 
 
-##Start development server
+## Configure API base URL in frontend
 
--npm run dev
+- const API_BASE_URL = "http://localhost:5000/api";
 
-###Challenges and Solutions
-##Challenge 1: Data Persistence Issues
+
+## Start development server
+
+- npm run dev
+
+### Challenges and Solutions
+## Challenge 1: Data Persistence Issues
 
 Initially, task data was stored in-memory on the backend, which caused data loss on server restarts and inconsistencies across deployments.
 
-##Solution:
+## Solution:
 Migrated task storage to MongoDB using Mongoose and implemented persistent CRUD operations with proper schema validation.
 
-##Challenge 2: Authentication and User Isolation
+## Challenge 2: Authentication and User Isolation
 
 Ensuring that each user could only access their own tasks required secure authentication and proper request handling.
 
-##Solution:
+## Solution:
 Implemented JWT-based authentication and protected backend routes using middleware. Tasks are queried using the authenticated user’s ID, ensuring strict user-level data isolation.
 
-###Future Enhancements
+### Future Enhancements
 
--Advanced search functionality
+- Advanced search functionality
 
--Task reminders and notifications
+- Task reminders and notifications
 
--Role-based access control
+- Role-based access control
 
--Pagination for large task lists
+- Pagination for large task lists
 
--Video Demo
+- Video Demo
 
 ///LINK HERE///
 
--User authentication
+- User authentication
 
--Task creation and updates
+- Task creation and updates
 
--Data persistence on refresh
+- Data persistence on refresh
 
--Dashboard statistics
+- Dashboard statistics
 
--API Documentation
+- API Documentation
 
--Swagger documentation is provided for testing and exploring API endpoints.
+- Swagger documentation is provided for testing and exploring API endpoints.
 
 ///(Swagger link to be added)///
 
--Submission Notes
+- Submission Notes
 
--JWT-based authentication and protected routes are implemented as bonus features
+- JWT-based authentication and protected routes are implemented as bonus features
 
--Backend uses persistent database storage
+- Backend uses persistent database storage
 
--Application is responsive and user-friendly
+- Application is responsive and user-friendly
