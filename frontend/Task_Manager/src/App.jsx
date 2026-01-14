@@ -33,12 +33,29 @@ const TaskManagementApp = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   // Restore session from JWT
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      setUser({ name: "user" }); // minimal restore
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  try {
+    const decoded = jwtDecode(token);
+
+    // JWT exp is in seconds
+    if (decoded.exp * 1000 < Date.now()) {
+      localStorage.removeItem("token");
+      setUser(null);
+      return;
     }
-  }, []);
+
+    setUser({
+      id: decoded.id || decoded.userId,
+      name: decoded.name || "User",
+    });
+  } catch {
+    localStorage.removeItem("token");
+    setUser(null);
+  }
+}, []);
 
   // Fetch tasks after login (NORMALIZED)
   useEffect(() => {
