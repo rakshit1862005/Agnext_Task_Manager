@@ -1,16 +1,28 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "TaskFlow API",
-    "version": "1.0.0",
-    "description": "Swagger collection for testing TaskFlow APIs"
+    "title": "Priorit API",
+    "description": "Priorit is a secure task management system that allows users to register, authenticate, and manage personal tasks. All task-related endpoints are protected using JWT-based authentication.",
+    "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "http://localhost:5000/api"
+      "url": "http://localhost:5000/api",
+      "description": "Local development server"
     },
     {
-      "url": "https://YOUR_RENDER_BACKEND_URL/api"
+      "url": "https://agnext-task-manager.onrender.com/api",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "User authentication and profile"
+    },
+    {
+      "name": "Tasks",
+      "description": "Task management APIs"
     }
   ],
   "components": {
@@ -19,6 +31,67 @@
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "65f1b0c9e1234567890abcd"
+          },
+          "email": {
+            "type": "string",
+            "example": "user@example.com"
+          }
+        }
+      },
+      "Task": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "65f1b0c9e1234567890abcd"
+          },
+          "title": {
+            "type": "string",
+            "example": "Finish assignment"
+          },
+          "description": {
+            "type": "string",
+            "example": "Complete the internship assignment"
+          },
+          "category": {
+            "type": "string",
+            "example": "Work"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["High", "Medium", "Low"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["Pending", "In Progress", "Completed"]
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-01-20"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "userId": {
+            "type": "string",
+            "example": "65f1b0c9e1234567890abcd"
+          }
+        }
       }
     }
   },
@@ -30,7 +103,8 @@
   "paths": {
     "/auth/register": {
       "post": {
-        "summary": "Register user",
+        "tags": ["Authentication"],
+        "summary": "Register a new user",
         "requestBody": {
           "required": true,
           "content": {
@@ -39,21 +113,33 @@
                 "type": "object",
                 "required": ["email", "password"],
                 "properties": {
-                  "email": { "type": "string" },
-                  "password": { "type": "string" }
+                  "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "password123"
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "201": { "description": "User registered" }
+          "201": {
+            "description": "User registered successfully"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
         }
       }
     },
     "/auth/login": {
       "post": {
-        "summary": "Login user",
+        "tags": ["Authentication"],
+        "summary": "Login user and return JWT token",
         "requestBody": {
           "required": true,
           "content": {
@@ -70,19 +156,99 @@
           }
         },
         "responses": {
-          "200": { "description": "Login successful" }
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/profile": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Get authenticated user profile",
+        "responses": {
+          "200": {
+            "description": "User profile retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/tasks/stats": {
+      "get": {
+        "tags": ["Tasks"],
+        "summary": "Get task statistics for authenticated user",
+        "description": "Returns aggregated task statistics such as total, completed, pending, in-progress, high priority, and overdue tasks.",
+        "responses": {
+          "200": {
+            "description": "Task statistics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": { "type": "integer", "example": 10 },
+                    "completed": { "type": "integer", "example": 4 },
+                    "inProgress": { "type": "integer", "example": 3 },
+                    "pending": { "type": "integer", "example": 2 },
+                    "highPriority": { "type": "integer", "example": 2 },
+                    "overdue": { "type": "integer", "example": 1 }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
         }
       }
     },
     "/tasks": {
       "get": {
-        "summary": "Get all tasks",
+        "tags": ["Tasks"],
+        "summary": "Get all tasks for authenticated user",
         "responses": {
-          "200": { "description": "Tasks fetched" }
+          "200": {
+            "description": "List of tasks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Task"
+                  }
+                }
+              }
+            }
+          }
         }
       },
       "post": {
-        "summary": "Create task",
+        "tags": ["Tasks"],
+        "summary": "Create a new task",
         "requestBody": {
           "required": true,
           "content": {
@@ -92,21 +258,43 @@
                 "required": ["title"],
                 "properties": {
                   "title": { "type": "string" },
-                  "priority": { "type": "string" },
-                  "status": { "type": "string" }
+                  "description": { "type": "string" },
+                  "category": { "type": "string" },
+                  "priority": {
+                    "type": "string",
+                    "enum": ["High", "Medium", "Low"]
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["Pending", "In Progress", "Completed"]
+                  },
+                  "dueDate": {
+                    "type": "string",
+                    "format": "date"
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "201": { "description": "Task created" }
+          "201": {
+            "description": "Task created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/tasks/{id}": {
       "put": {
-        "summary": "Update task",
+        "tags": ["Tasks"],
+        "summary": "Update a task",
         "parameters": [
           {
             "name": "id",
@@ -115,12 +303,41 @@
             "schema": { "type": "string" }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "description": { "type": "string" },
+                  "category": { "type": "string" },
+                  "priority": {
+                    "type": "string",
+                    "enum": ["High", "Medium", "Low"]
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["Pending", "In Progress", "Completed"]
+                  },
+                  "dueDate": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
-          "200": { "description": "Task updated" }
+          "200": {
+            "description": "Task updated successfully"
+          }
         }
       },
       "delete": {
-        "summary": "Delete task",
+        "tags": ["Tasks"],
+        "summary": "Delete a task",
         "parameters": [
           {
             "name": "id",
@@ -130,7 +347,9 @@
           }
         ],
         "responses": {
-          "200": { "description": "Task deleted" }
+          "200": {
+            "description": "Task deleted successfully"
+          }
         }
       }
     }
