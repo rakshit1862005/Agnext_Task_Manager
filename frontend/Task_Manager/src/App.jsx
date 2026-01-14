@@ -12,71 +12,100 @@ import "./components/dashboard/DashboardPage.css";
 import "./components/task/TasksPage.css";
 import "./components/task/TaskFormModal.css";
 
+
+const normalizeTask = (task) => ({
+  id: task.id || task._id,
+  title: task.title,
+  description: task.description,
+  status: task.status,
+  priority: task.priority,
+  dueDate: task.dueDate,
+  category: task.category,
+});
+
 const TaskManagementApp = () => {
   const [user, setUser] = useState(null);
   const [currentPage, setCurrentPage] = useState("dashboard");
   const [tasks, setTasks] = useState([]);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
-  // Restore session from token
+  // Restore session from JWT
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token && !user) {
-      setUser({ name: "User" });
+    if (token) {
+      setUser({ name: "User" }); // minimal restore
     }
   }, []);
 
-  // Fetch tasks after login
+  // Fetch tasks after login (NORMALIZED)
   useEffect(() => {
-    if (user) {
-      apiFetch("/tasks")
-        .then(setTasks)
-        .catch(console.error);
-    }
+    if (!user) return;
+
+    apiFetch("/tasks")
+      .then((data) => setTasks(data.map(normalizeTask)))
+      .catch(console.error);
   }, [user]);
 
-  // Add task
-const handleAddTask = async (taskData) => {
-  const newTask = await apiFetch("/tasks", {
-    method: "POST",
-    body: JSON.stringify(taskData),
-  });
-
-  console.log("NEW TASK FROM BACKEND:", newTask);
-
-  setTasks(prev => [...prev, newTask]);
-};
-
-
-  // Update task
-  const handleUpdateTask = async (task) => {
-    const updated = await apiFetch(`/tasks/${task.id}`, {
-      method: "PUT",
-      body: JSON.stringify(task),
+  // Add task (NORMALIZED)
+  const handleAddTask = async (taskData) => {
+    const createdRaw = await apiFetch("/tasks", {
+      method: "POST",
+      body: JSON.stringify(taskData),
     });
+
+    const created = normalizeTask(createdRaw);
+    setTasks((prev) => [...prev, created]);
+  };
+
+  // Update task (INSTANT UI UPDATE)
+  const handleUpdateTask = async (task) => {
+    const id = task.id || task._id;
+    if (!id) return;
+
+    const updatedRaw = await apiFetch(`/tasks/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        title: task.title,
+        description: task.description,
+        status: task.status,
+        priority: task.priority,
+        dueDate: task.dueDate,
+        category: task.category,
+      }),
+    });
+
+    const updated = normalizeTask(updatedRaw);
+
     setTasks((prev) =>
       prev.map((t) => (t.id === updated.id ? updated : t))
     );
   };
 
-  // Delete task
+  // 🗑 Delete task (INSTANT UI UPDATE)
   const handleDeleteTask = async (id) => {
+    if (!id) return;
+
     await apiFetch(`/tasks/${id}`, { method: "DELETE" });
     setTasks((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Mark as complete
+  // Mark task complete (INSTANT UI UPDATE)
   const handleMarkComplete = async (id) => {
-    const updated = await apiFetch(`/tasks/${id}`, {
+    if (!id) return;
+
+    const updatedRaw = await apiFetch(`/tasks/${id}`, {
       method: "PUT",
       body: JSON.stringify({ status: "Completed" }),
     });
+
+    const updated = normalizeTask(updatedRaw);
+
     setTasks((prev) =>
       prev.map((t) => (t.id === updated.id ? updated : t))
     );
   };
 
-  // Logout Function
+  // Logout
   const handleLogout = () => {
     localStorage.removeItem("token");
     setUser(null);
@@ -100,22 +129,32 @@ const handleAddTask = async (taskData) => {
             <h1 className="header-title">TaskFlow Pro</h1>
           </div>
 
-          <nav className="header-nav" style={{ display: showMobileMenu ? "none" : undefined }}>
+          <nav
+            className="header-nav"
+            style={{ display: showMobileMenu ? "none" : undefined }}
+          >
             <button
               onClick={() => setCurrentPage("dashboard")}
-              className={`nav-btn ${currentPage === "dashboard" ? "active" : ""}`}
+              className={`nav-btn ${
+                currentPage === "dashboard" ? "active" : ""
+              }`}
             >
               Dashboard
             </button>
             <button
               onClick={() => setCurrentPage("tasks")}
-              className={`nav-btn ${currentPage === "tasks" ? "active" : ""}`}
+              className={`nav-btn ${
+                currentPage === "tasks" ? "active" : ""
+              }`}
             >
               Tasks
             </button>
           </nav>
 
-          <div className="header-user" style={{ display: showMobileMenu ? "none" : undefined }}>
+          <div
+            className="header-user"
+            style={{ display: showMobileMenu ? "none" : undefined }}
+          >
             <span className="user-name">{user.name}</span>
             <button onClick={handleLogout} className="btn-logout">
               <LogOut size={16} />
@@ -138,7 +177,7 @@ const handleAddTask = async (taskData) => {
                 setCurrentPage("dashboard");
                 setShowMobileMenu(false);
               }}
-              className={`nav-btn ${currentPage === "dashboard" ? "active" : ""}`}
+              className="nav-btn"
             >
               Dashboard
             </button>
@@ -147,7 +186,7 @@ const handleAddTask = async (taskData) => {
                 setCurrentPage("tasks");
                 setShowMobileMenu(false);
               }}
-              className={`nav-btn ${currentPage === "tasks" ? "active" : ""}`}
+              className="nav-btn"
             >
               Tasks
             </button>

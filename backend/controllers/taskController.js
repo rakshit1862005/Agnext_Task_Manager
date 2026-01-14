@@ -1,41 +1,61 @@
-const Task = require("../models/Task");
+const tasks = require("../data/tasks");
 
-exports.getTasks = async (req, res) => {
-  const tasks = await Task.find({ userId: req.user.userId });
-  res.json(tasks);
+exports.getTasks = (req, res) => {
+  const userTasks = tasks.filter(
+    task => task.userId === req.user.userId
+  );
+  res.json(userTasks);
 };
 
-exports.createTask = async (req, res) => {
-  const task = await Task.create({
-    ...req.body,
+exports.createTask = (req, res) => {
+  const { title, description, priority, status, category, dueDate } = req.body;
+
+  if (!title) {
+    return res.status(400).json({ message: "Title is required" });
+  }
+
+  const newTask = {
+    id: Date.now().toString(),
+    title,
+    description: description || "",
+    priority: priority || "Low",
+    status: status || "Pending",
+    category: category || "",
+    dueDate: dueDate || null,
     userId: req.user.userId,
-  });
-  res.status(201).json(task);
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  tasks.push(newTask);
+  res.status(201).json(newTask);
 };
 
-exports.updateTask = async (req, res) => {
-  const task = await Task.findOneAndUpdate(
-    { _id: req.params.id, userId: req.user.userId },
-    { ...req.body },
-    { new: true }
+exports.updateTask = (req, res) => {
+  const task = tasks.find(
+    t => t.id === req.params.id && t.userId === req.user.userId
   );
 
   if (!task) {
     return res.status(404).json({ message: "Task not found" });
   }
 
+  Object.assign(task, req.body, {
+    updatedAt: new Date().toISOString()
+  });
+
   res.json(task);
 };
 
-exports.deleteTask = async (req, res) => {
-  const task = await Task.findOneAndDelete({
-    _id: req.params.id,
-    userId: req.user.userId,
-  });
+exports.deleteTask = (req, res) => {
+  const index = tasks.findIndex(
+    t => t.id === req.params.id && t.userId === req.user.userId
+  );
 
-  if (!task) {
+  if (index === -1) {
     return res.status(404).json({ message: "Task not found" });
   }
 
+  tasks.splice(index, 1);
   res.json({ message: "Task deleted" });
 };
