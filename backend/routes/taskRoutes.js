@@ -15,7 +15,7 @@ router.use(auth);
 /* -------------------- BONUS: Task statistics -------------------- */
 router.get("/stats", getTaskStats);
 
-/* -------------------- Task CRUD -------------------- */
+/* -------------------- Task CRUD Wont Work Without Token -------------------- */
 router.get("/", getTasks);
 router.post("/", createTask);
 router.put("/:id", updateTask);

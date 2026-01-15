@@ -78,7 +78,7 @@ exports.deleteTask = async (req, res) => {
   }
 };
 
-/* -------------------- Get task statistics (BONUS) -------------------- */
+/* -------------------- Get task statistics (BONUS Task) -------------------- */
 exports.getTaskStats = async (req, res) => {
   try {
     const tasks = await Task.find({ userId: req.user.id });
