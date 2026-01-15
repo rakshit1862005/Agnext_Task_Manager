@@ -36,7 +36,7 @@ const TaskManagementApp = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      setUser({ name: "user" }); // minimal restore
+      setUser({ name: "user" }); // minimal restore from token
     }
   }, []);
 
