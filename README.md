@@ -12,6 +12,9 @@ The project demonstrates fullstack development skills, including frontend–back
 
 - **Frontend:** https://agnext-task-manager-er8u.vercel.app/
 - **Backend API:** https://agnext-task-manager.onrender.com/api
+- **Video Demo:** https://drive.google.com/file/d/1uEBXTZTG0Qwk1Y5oqZzaQRso30IJajW2/view?usp=sharing
+
+
 
 > Note: The backend is deployed on a free hosting tier and may take a few seconds to respond on the first request due to cold start.
 
@@ -173,10 +176,6 @@ Implemented JWT-based authentication and protected backend routes using middlewa
 - Role-based access control
 
 - Pagination for large task lists
-
-- Video Demo
-
-https://drive.google.com/file/d/1uEBXTZTG0Qwk1Y5oqZzaQRso30IJajW2/view?usp=sharing
 
 - User authentication
 
